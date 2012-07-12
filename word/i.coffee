@@ -52,4 +52,5 @@ one0 = (ctx, s, x, y) ->
 		unit ctx, x, y+j*dy+ddy, x+dx, y+j*dy+ddy
 		unit ctx, x+dx+ddx, y+j*dy, x+dx+ddx, y+j*dy+dy
 		unit ctx, x+dx, y+j*dy+ddy, x+2*dx, y+j*dy+ddy
-do main
+
+window.onload = main
