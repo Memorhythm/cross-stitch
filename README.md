@@ -2,7 +2,7 @@
 Cross Stitch
 ----
 
-### Usage
+Demo http://repo.tiye.me/jiyinyiyong/cross-stitch/
 
 ### Workflow
 
