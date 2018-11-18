@@ -16,8 +16,8 @@
 
 (def comp-sudoku
   (create-comp
-   {:key-fn (fn [x y version] (str x ":" y)), :name :app-sudoku}
-   (fn [[x y version] _ _]
+   {:key-fn (fn [x y version] (str x ":" y)), :name :app-sudoku, :state 0}
+   (fn [[x y version] state mutate!]
      (let [{stroke-size :stroke-size,
             stroke-width :stroke-width,
             cell-margin :cell-margin,
@@ -35,7 +35,7 @@
            sy (+ from-y cell-padding cell-margin)]
        (tag*
         :g
-        {}
+        {:onMouseEnter (fn [event] (mutate! (inc state)))}
         (tag*
          :rect
          {:x (+ from-x cell-margin),

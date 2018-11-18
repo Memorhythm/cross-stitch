@@ -9,7 +9,7 @@
    :cell-size 4,
    :grid-size 8,
    :background-color "rgb(214,6,38)",
-   :duration 600,
+   :duration 500,
    :radius 4})
 
 (def store {:tasks {}})
