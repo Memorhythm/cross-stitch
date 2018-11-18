@@ -35,7 +35,7 @@
            sy (+ from-y cell-padding cell-margin)]
        (tag*
         :g
-        {:onMouseEnter (fn [event] (mutate! (inc state)))}
+        {:onMouseEnter (fn [event] (mutate! (inc state))), :style (adorn {:cursor "none"})}
         (tag*
          :rect
          {:x (+ from-x cell-margin),
@@ -56,7 +56,7 @@
              :x2 (+ sx (* stroke-size (+ a 1))),
              :y2 (+ sy (* stroke-size (+ b 1))),
              :stroke "white",
-             :strokeWidth 2,
+             :strokeWidth stroke-width,
              :opacity (random-opacity),
              :style (adorn
                      {:transition-duration (<< "~{duration}ms"),
@@ -73,7 +73,7 @@
              :x2 (+ sx (* stroke-size a)),
              :y2 (+ sy (* stroke-size (+ b 1))),
              :stroke "white",
-             :stroke-width 2,
+             :stroke-width stroke-width,
              :opacity (random-opacity),
              :style (adorn
                      {:transition-duration (<< "~{duration}ms"),
@@ -85,7 +85,7 @@
    (fn [[version] _ _]
      (tag*
       :svg
-      {:width 320, :height 320}
+      {:width 320, :height 320, :style (adorn {:cursor "none"})}
       (expand-grid
        (:grid-size metrics)
        (:grid-size metrics)
