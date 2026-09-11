@@ -6,49 +6,63 @@ on:
       - main
   pull_request: {}
 
+permissions:
+  contents: read
+
+concurrency:
+  group: upload-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Get yarn cache
-      id: yarn-cache
-      run: echo "::set-output name=dir::$(yarn cache dir)"
-
-    - uses: actions/cache@v2
-      name: Cache node modules of yarn
+    - uses: actions/checkout@v5.1.0
       with:
-        path: ${{ steps.yarn-cache.outputs.dir }}
-        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-yarn-
+        persist-credentials: false
 
-    - name: ACTIONS_ALLOW_UNSECURE_COMMANDS
-      id: ACTIONS_ALLOW_UNSECURE_COMMANDS
-      run: echo 'ACTIONS_ALLOW_UNSECURE_COMMANDS=true' >> $GITHUB_ENV
+    - uses: actions/setup-node@v5.0.0
+      with:
+        node-version: 24
+        package-manager-cache: false
 
-    - name: add cr
+    - name: Enable Yarn
       run: |
-        mkdir -p $GITHUB_WORKSPACE/bin
-        wget -O $GITHUB_WORKSPACE/bin/cr http://repo.calcit-lang.org/binaries/linux/cr
-        chmod +x $GITHUB_WORKSPACE/bin/cr
-        echo "::add-path::$GITHUB_WORKSPACE/bin"
+        mkdir -p "$RUNNER_TEMP/bin"
+        corepack enable --install-directory "$RUNNER_TEMP/bin"
+        echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+        export PATH="$RUNNER_TEMP/bin:$PATH"
+        yarn --version
 
-    - name: "prepare modules"
-      run: >
-        mkdir -p ~/.config/calcit/modules/ && cd ~/.config/calcit/modules/
-        && git clone https://github.com/calcit-lang/reacher.git --branch 0.0.1
-        && git clone https://github.com/Respo/respo-ui.calcit
+    - uses: calcit-lang/setup-calcit@v1.4.0
 
-    - name: "compiles to js"
-      run: >
-        cr --emit-js --once
-        && yarn && yarn vite build --base=./
+    # Migration note: strict resolution is blocked by published provider
+    # conflicts (respo-ui 0.7.19 pins respo 0.16.95 / js-ffi 0.1.12 while this
+    # project uses respo 0.16.100 / js-ffi 0.1.16). Tighten to `--strict` once
+    # respo-ui publishes matching dependency ranges.
+    - name: Install Calcit modules
+      run: caps --ci
+
+    - name: Install JavaScript dependencies
+      run: yarn install --immutable
+
+    - name: Verify Calcit toolchain
+      run: caps verify --toolchain
+
+    - name: Validate Snapshot
+      run: |
+        calcit calcit.cirru edit format
+        git diff --exit-code -- calcit.cirru
+        calcit calcit.cirru --check-only
+        calcit calcit.cirru analyze deprecated --summary-only --format json
+
+    - name: Compile website
+      run: yarn build
 
     - name: Deploy to server
       id: deploy
-      uses: Pendect/action-rsyncer@v1.1.0
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: Pendect/action-rsyncer@v2.0.0
       env:
         DEPLOY_KEY: ${{secrets.rsync_private_key}}
       with:
@@ -59,4 +73,5 @@ jobs:
         dest: 'rsync-user@tiye.me:/web-assets/repo/${{ github.repository }}'
 
     - name: Display status from deploy
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: echo "${{ steps.deploy.outputs.status }}"
