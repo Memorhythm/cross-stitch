@@ -15,54 +15,43 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v5.1.0
-      with:
-        persist-credentials: false
+    - uses: actions/checkout@v4
 
-    - uses: actions/setup-node@v5.0.0
+    - uses: actions/setup-node@v6
       with:
         node-version: 24
-        package-manager-cache: false
 
-    - name: Enable Yarn
-      run: |
-        mkdir -p "$RUNNER_TEMP/bin"
-        corepack enable --install-directory "$RUNNER_TEMP/bin"
-        echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-        export PATH="$RUNNER_TEMP/bin:$PATH"
-        yarn --version
+    - run: corepack enable && corepack prepare yarn@4.12.0 --activate
 
-    - uses: calcit-lang/setup-calcit@v1.4.0
+    - uses: calcit-lang/setup-calcit@v1
 
-    # Migration note: strict resolution is blocked by published provider
+    # Migration note: `caps --strict` is blocked by published provider
     # conflicts (respo-ui 0.7.19 pins respo 0.16.95 / js-ffi 0.1.12 while this
-    # project uses respo 0.16.100 / js-ffi 0.1.16). Tighten to `--strict` once
-    # respo-ui publishes matching dependency ranges.
-    - name: Install Calcit modules
-      run: caps --ci
+    # project uses respo 0.16.100 / js-ffi 0.1.16). Tighten once respo-ui
+    # publishes matching ranges.
+    - name: "load deps"
+      run: caps --ci && yarn install --immutable
 
-    - name: Install JavaScript dependencies
-      run: yarn install --immutable
-
-    - name: Verify Calcit toolchain
-      run: caps verify --toolchain
-
-    - name: Validate Snapshot
+    - name: Validate Calcit snapshot and types
       run: |
         calcit calcit.cirru edit format
         git diff --exit-code -- calcit.cirru
         calcit calcit.cirru --check-only
+        calcit calcit.cirru analyze check-types --summary-only --format json
+        calcit calcit.cirru analyze weak-types --only schema-dynamic,code-dynamic --intent unresolved --summary-only --format json
         calcit calcit.cirru analyze deprecated --summary-only --format json
 
-    - name: Compile website
-      run: yarn build
+    - name: "compiles to js"
+      run: >
+        calcit calcit.cirru js
+        && yarn vite build --base=./
 
     - name: Deploy to server
-      id: deploy
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      uses: Pendect/action-rsyncer@v2.0.0
+      id: deploy
+      uses: Pendect/action-rsyncer@8e05ffa5c93e5d9c9b167796b26044d2c616b2b9 # v2.0.0
       env:
         DEPLOY_KEY: ${{secrets.rsync_private_key}}
       with:

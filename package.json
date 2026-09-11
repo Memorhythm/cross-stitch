@@ -5,11 +5,11 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "vite": "^5.4.10"
+    "vite": "^8.0.12"
   },
   "scripts": {
-    "check": "calcit calcit.cirru --check-only",
-    "build": "calcit calcit.cirru && vite build --base=./"
+    "compile": "caps --ci && calcit calcit.cirru js",
+    "release": "yarn vite build --base=./"
   },
   "version": "0.0.1",
   "packageManager": "yarn@4.12.0"
