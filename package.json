@@ -1,13 +1,16 @@
 {
   "dependencies": {
-    "@calcit/procs": "^0.5.46",
+    "@calcit/procs": "0.14.8",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "shortid": "^2.2.16"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "bottom-tip": "^0.1.3",
-    "vite": "^2.9.12"
+    "vite": "^8.0.12"
   },
-  "version": "0.0.1"
+  "scripts": {
+    "compile": "caps --ci && calcit calcit.cirru js",
+    "release": "yarn vite build --base=./"
+  },
+  "version": "0.0.1",
+  "packageManager": "yarn@4.12.0"
 }
