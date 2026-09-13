@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@calcit/procs": "0.14.8",
+    "@calcit/procs": "0.14.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
