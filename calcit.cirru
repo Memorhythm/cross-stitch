@@ -3,8 +3,7 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |app
   :entries $ {} $ :default
-    {} (:description |) (:init-fn 'app.main/main!) (:mode :js)
-      :reload-fn 'app.main/reload!
+    {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/
       :type-slots $ {} $ :dispatch-op |app.schema/Op
@@ -24,8 +23,7 @@
                       d! $ :: Op :version
                   , |Change
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :return 'respo.schema/Component
+          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'app.schema/Store
         'comp-field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-field (metrics)
@@ -38,8 +36,7 @@
               , & $ expand-grid (:grid-size metrics) (:grid-size metrics)
                 fn (x y) (comp-sudoku metrics x y)
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :return 'respo.schema/Component
+          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'app.schema/Metrics
         'comp-sudoku $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-sudoku (metrics x y)
@@ -91,8 +88,7 @@
                 {} $ :style $ {} (:cursor |none)
                 , & $ concat ([] rect-el) lines-a lines-b
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :return 'respo.schema/Component
+          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'app.schema/Metrics 'Number 'Number
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
@@ -112,8 +108,7 @@
           :schema $ :: 'Bool
         'site $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def site
-            {} (:storage |cross-stitch) (:title "|Cross Stitch")
-              :icon |http://cdn.tiye.me/logo/mvc-works.png
+            {} (:storage |cross-stitch) (:title "|Cross Stitch") (:icon |http://cdn.tiye.me/logo/mvc-works.png)
           :examples $ []
           :schema $ :: 'Map
       :ns $ %{} 'NsEntry (:doc |)
@@ -179,10 +174,7 @@
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Metrics $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct Metrics (:stroke-size 'Number) (:stroke-width 'Number) (:cell-margin 'Number) (:cell-padding 'Number) (:cell-size 'Number) (:grid-size 'Number)
-            :background-color 'String
-            :duration 'Number
-            :radius 'Number
+          :code $ quote $ defstruct Metrics (:stroke-size 'Number) (:stroke-width 'Number) (:cell-margin 'Number) (:cell-padding 'Number) (:cell-size 'Number) (:grid-size 'Number) (:background-color 'String) (:duration 'Number) (:radius 'Number)
           :examples $ []
           :schema $ :: 'Enum
         'Op $ %{} 'CodeEntry (:doc |)
@@ -190,16 +182,12 @@
           :examples $ []
           :schema $ :: 'Enum
         'Store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct Store
-            :metrics 'app.schema/Metrics
+          :code $ quote $ defstruct Store (:metrics 'app.schema/Metrics)
           :examples $ []
           :schema $ :: 'Enum
         'metrics $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def metrics
-            %{} Metrics (:stroke-size 6) (:stroke-width 2) (:cell-margin 2) (:cell-padding 4) (:cell-size 4) (:grid-size 8)
-              :background-color "|rgb(214,6,38)"
-              :duration 500
-              :radius 4
+            %{} Metrics (:stroke-size 6) (:stroke-width 2) (:cell-margin 2) (:cell-padding 4) (:cell-size 4) (:grid-size 8) (:background-color "|rgb(214,6,38)") (:duration 500) (:radius 4)
           :examples $ []
           :schema $ :: 'app.schema/Metrics
         'store $ %{} 'CodeEntry (:doc |)
@@ -218,8 +206,7 @@
               (:hydrate-storage data) (do data)
               _ $ do (eprintln |Unknown-op: op) store
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :return 'app.schema/Store
+          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
             :args $ [] 'app.schema/Store 'app.schema/Op
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
@@ -240,8 +227,7 @@
           :examples $ []
           :schema $ :: 'Fn $ {}
             :args $ [] 'Number 'Number $ :: 'Fn
-              {}
-                :return 'respo.schema/Component
+              {} (:return 'respo.schema/Component)
                 :args $ [] 'Number 'Number
             :return $ :: 'List 'respo.schema/Component
         'random-opacity $ %{} 'CodeEntry (:doc |)
@@ -261,8 +247,7 @@
               :features $ #{} :js-ffi
             assert-type x 'respo.schema/Component
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :return 'respo.schema/Component
+          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'Dynamic
             :features $ #{} :js-ffi
         'svg-element $ %{} 'CodeEntry (:doc |)
@@ -273,8 +258,7 @@
               :return 'respo.schema/Component
             return-component $ create-element tag (svg-props props) & children
           :examples $ []
-          :schema $ :: 'Fn $ {} (:rest 'Dynamic)
-            :return 'respo.schema/Component
+          :schema $ :: 'Fn $ {} (:rest 'Dynamic) (:return 'respo.schema/Component)
             :args $ [] 'Tag 'Dynamic
         'svg-props $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn svg-props (m)
@@ -284,8 +268,7 @@
               :features $ #{} :js-ffi
             assert-type m 'respo.schema/DomProps
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :return 'respo.schema/DomProps
+          :schema $ :: 'Fn $ {} (:return 'respo.schema/DomProps)
             :args $ [] 'Dynamic
             :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
