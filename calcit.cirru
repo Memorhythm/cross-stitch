@@ -110,7 +110,7 @@
           :code $ quote $ def site
             {} (:storage |cross-stitch) (:title "|Cross Stitch") (:icon |http://cdn.tiye.me/logo/mvc-works.png)
           :examples $ []
-          :schema $ :: 'Map
+          :schema $ :: 'Map 'Tag 'String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.config
     'app.main $ %{} 'FileEntry
@@ -159,11 +159,6 @@
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
             :features $ #{} :js-ffi
-        'ssr? $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def ssr?
-            some? $ js/document.querySelector |meta.respo-ssr
-          :examples $ []
-          :schema $ :: 'Bool
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -187,12 +182,11 @@
           :schema $ :: 'Enum
         'metrics $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def metrics
-            %{} Metrics (:stroke-size 6) (:stroke-width 2) (:cell-margin 2) (:cell-padding 4) (:cell-size 4) (:grid-size 8) (:background-color "|rgb(214,6,38)") (:duration 500) (:radius 4)
+            Metrics :stroke-size 6 :stroke-width 2 :cell-margin 2 :cell-padding 4 :cell-size 4 :grid-size 8 :background-color "|rgb(214,6,38)" :duration 500 :radius 4
           :examples $ []
           :schema $ :: 'app.schema/Metrics
         'store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ def store
-            %{} Store $ :metrics metrics
+          :code $ quote $ def store (Store :metrics metrics)
           :examples $ []
           :schema $ :: 'app.schema/Store
       :ns $ %{} 'NsEntry (:doc |)
@@ -202,8 +196,8 @@
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defn updater (store op)
             match op
-              (:version) (do store)
-              (:hydrate-storage data) (do data)
+              (:version) store
+              (:hydrate-storage data) data
               _ $ do (eprintln |Unknown-op: op) store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
