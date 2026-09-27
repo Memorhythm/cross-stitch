@@ -28,7 +28,7 @@ jobs:
     - uses: calcit-lang/setup-calcit@ca701be5a471759e442aa053cd100720bbe1f09f # v1
 
     - name: "load deps"
-      run: caps --strict --ci && yarn install --immutable
+      run: caps --strict --ci && caps verify --toolchain && yarn install --immutable
 
     - name: Validate Calcit snapshot and types
       run: |
@@ -36,6 +36,8 @@ jobs:
         git diff --exit-code -- calcit.cirru
         calcit calcit.cirru fix --workflow strict --verify --format edn
         calcit calcit.cirru --check-only
+        calcit calcit.cirru test --require-match
+        calcit calcit.cirru analyze check-public --ns app.main --ns app.schema --ns app.util --ns app.updater --ns app.comp.container --summary-only
         calcit calcit.cirru analyze dynamic-methods
         calcit calcit.cirru analyze check-types --summary-only --format json
         calcit calcit.cirru analyze weak-types --only schema-dynamic,code-dynamic --intent unresolved --summary-only --format json

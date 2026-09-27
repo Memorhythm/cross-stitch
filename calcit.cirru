@@ -3,7 +3,7 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |app
   :entries $ {} $ :default
-    {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!)
+    {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/
       :type-slots $ {} $ :dispatch-op |app.schema/Op
@@ -20,8 +20,8 @@
                 button
                   {} (:style ui/button)
                     :on-click $ fn (e d!)
-                      d! $ :: Op :version
-                  , |Change
+                      d! $ Op :version
+                  <> |Change
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
             :args $ [] 'app.schema/Store
@@ -93,7 +93,7 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
-            respo.core :refer $ defcomp div button
+            respo.core :refer $ defcomp div button <>
             respo-ui.core :as ui
             app.util :refer $ expand-grid random-opacity svg-element
             app.schema :refer $ Op Metrics Store
@@ -129,19 +129,17 @@
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!)
             add-watch *store :changes $ fn (s prev) (render-app!)
-            js/window.addEventListener |beforeunload persist-storage!
+            browser/add-event-listener! |beforeunload $ fn (_event) (persist-storage!)
             println "|App started."
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
-            :features $ #{} :js-ffi
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
-            .setItem js/localStorage |cross-stitch $ format-cirru-edn @*store
+            browser/storage-set! |cross-stitch $ format-cirru-edn @*store
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
-            :features $ #{} :js-ffi
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (render-app!)
           :examples $ []
@@ -151,14 +149,13 @@
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
-                target $ js/document.querySelector |.app
+                target $ option:unwrap $ browser/query-selector |.app
               render-with! target
                 fn () $ comp-container @*store
                 , dispatch!
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
-            :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -166,6 +163,7 @@
             app.schema :as schema
             app.comp.container :refer $ comp-container
             respo.core :refer $ render-with!
+            js-ffi.browser :as browser
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Metrics $ %{} 'CodeEntry (:doc |)
@@ -173,7 +171,7 @@
           :examples $ []
           :schema $ :: 'Enum
         'Op $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defenum Op (:version) (:hydrate-storage 'Dynamic)
+          :code $ quote $ defenum Op (:version) (:hydrate-storage 'app.schema/Store)
           :examples $ []
           :schema $ :: 'Enum
         'Store $ %{} 'CodeEntry (:doc |)
@@ -202,8 +200,14 @@
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
             :args $ [] 'app.schema/Store 'app.schema/Op
+          :tests $ [] $ %{} 'TestEntry (:name |typed-storage-hydration)
+            :code $ quote $ let
+                next-store $ Store :metrics $ Metrics :stroke-size 6 :stroke-width 2 :cell-margin 2 :cell-padding 4 :cell-size 4 :grid-size 4 :background-color "|rgb(214,6,38)" :duration 500 :radius 4
+              assert= app.schema/store $ updater app.schema/store $ Op :version
+              assert= next-store $ updater app.schema/store $ Op :hydrate-storage next-store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
+          :require $ app.schema :refer $ Op Store Metrics
     'app.util $ %{} 'FileEntry
       :defs $ {}
         'expand-grid $ %{} 'CodeEntry (:doc |)
@@ -227,12 +231,11 @@
         'random-opacity $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn random-opacity ()
             if
-              > (.random js/Math) 0.5
+              > (browser/random) 0.5
               , 1 0
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Number)
             :args $ []
-            :features $ #{} :js-ffi
         'return-component $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn return-component (x)
             hint-fn $ {}
@@ -267,4 +270,6 @@
             :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.util
-          :require $ respo.core :refer $ create-element
+          :require
+            respo.core :refer $ create-element
+            js-ffi.browser :as browser
