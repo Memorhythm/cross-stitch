@@ -28,7 +28,7 @@ jobs:
     - uses: calcit-lang/setup-calcit@ca701be5a471759e442aa053cd100720bbe1f09f # v1
 
     - name: "load deps"
-      run: caps --strict --ci && caps verify --toolchain && yarn install --immutable
+      run: caps --strict --ci && yarn install --immutable && caps verify --toolchain
 
     - name: Validate Calcit snapshot and types
       run: |
