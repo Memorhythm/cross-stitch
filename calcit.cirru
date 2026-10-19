@@ -27,10 +27,7 @@
             :args $ [] 'app.schema/Store
         'comp-field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-field (metrics)
-            hint-fn $ {}
-              :args $ [] 'app.schema/Metrics
-              :return 'respo.schema/Component
-            svg-element :svg
+            create-element :svg
               {} (:width |320) (:height |320)
                 :style $ {} $ :cursor |none
               , & $ expand-grid (:grid-size metrics) (:grid-size metrics)
@@ -40,9 +37,6 @@
             :args $ [] 'app.schema/Metrics
         'comp-sudoku $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-sudoku (metrics x y)
-            hint-fn $ {}
-              :args $ [] 'app.schema/Metrics 'Number 'Number
-              :return 'respo.schema/Component
             let
                 cell-padding $ :cell-padding metrics
                 cell-margin $ :cell-margin metrics
@@ -61,9 +55,9 @@
                 mk-lines $ fn (prefix offset)
                   hint-fn $ {}
                     :args $ [] 'String 'Number
-                    :return $ :: 'List 'respo.schema/Component
+                    :return $ :: 'List 'respo.schema/Element
                   expand-grid cell-size cell-size $ fn (a b)
-                    svg-element :line $ {}
+                    create-element :line $ {}
                       :key $ str prefix a |: b
                       :x1 $ + sx $ * (+ a offset) stroke-size
                       :y1 $ + sy $ * b stroke-size
@@ -77,14 +71,14 @@
                         :transition-timing-function |linear
                 lines-a $ mk-lines | 0
                 lines-b $ mk-lines |n- 1
-                rect-el $ svg-element :rect $ {}
+                rect-el $ create-element :rect $ {}
                   :x $ + from-x cell-margin
                   :y $ + from-y cell-margin
                   :width cell-length
                   :height cell-length
                   :fill bg-color
                   :rx radius
-              svg-element :g
+              create-element :g
                 {} $ :style $ {} (:cursor |none)
                 , & $ concat ([] rect-el) lines-a lines-b
           :examples $ []
@@ -93,9 +87,9 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
-            respo.core :refer $ defcomp div button <>
+            respo.core :refer $ defcomp div button <> create-element
             respo-ui.core :as ui
-            app.util :refer $ expand-grid random-opacity svg-element
+            app.util :refer $ expand-grid random-opacity
             app.schema :refer $ Op Metrics Store
     'app.config $ %{} 'FileEntry
       :defs $ {}
@@ -116,19 +110,20 @@
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defatom *store schema/store
+          :code $ quote $ defref *store schema/store
           :examples $ []
           :schema $ :: 'Ref 'app.schema/Store
         'dispatch! $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn dispatch! (op)
-            reset! *store $ updater @*store op
+          :code $ quote $ defn dispatch! (raw-op)
+            reset! *store $ updater @*store $ decode-map-as raw-op 'app.schema/Op
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'app.schema/Op
+            :args $ [] 'Dynamic
             :features $ #{} :js-ffi
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!)
-            add-watch *store :changes $ fn (s prev) (render-app!)
+            add-watch! *store :changes $ fn (s prev) (render-app!)
             browser/add-event-listener! |beforeunload $ fn (_event) (persist-storage!)
             println "|App started."
           :examples $ []
@@ -149,7 +144,7 @@
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
-                target $ option:unwrap $ browser/query-selector |.app
+                target $ option:unwrap $ dom/query-selector |.app
               render-with! target
                 fn () $ comp-container @*store
                 , dispatch!
@@ -164,20 +159,21 @@
             app.comp.container :refer $ comp-container
             respo.core :refer $ render-with!
             js-ffi.browser :as browser
+            respo.ffi.browser :as dom
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Metrics $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Metrics (:stroke-size 'Number) (:stroke-width 'Number) (:cell-margin 'Number) (:cell-padding 'Number) (:cell-size 'Number) (:grid-size 'Number) (:background-color 'String) (:duration 'Number) (:radius 'Number)
           :examples $ []
-          :schema $ :: 'Enum
+          :schema $ :: 'StructDef
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op (:version) (:hydrate-storage 'app.schema/Store)
           :examples $ []
-          :schema $ :: 'Enum
+          :schema $ :: 'EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store (:metrics 'app.schema/Metrics)
           :examples $ []
-          :schema $ :: 'Enum
+          :schema $ :: 'StructDef
         'metrics $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def metrics
             Metrics :stroke-size 6 :stroke-width 2 :cell-margin 2 :cell-padding 4 :cell-size 4 :grid-size 8 :background-color "|rgb(214,6,38)" :duration 500 :radius 4
@@ -210,24 +206,33 @@
           :require $ app.schema :refer $ Op Store Metrics
     'app.util $ %{} 'FileEntry
       :defs $ {}
-        'expand-grid $ %{} 'CodeEntry (:doc |)
+        'expand-grid $ %{} 'CodeEntry
+          :doc "|按 x 外层、y 内层的稳定顺序生成网格结果；返回元素类型由回调决定，支持 Component 和原生 Element，不进行类型强转。"
           :code $ quote $ defn expand-grid (x y f)
-            assert-type
-              -> (range x)
-                mapcat $ fn (xi)
-                  hint-fn $ {}
-                    :args $ [] 'Number
-                    :return $ :: 'List $ :: 'List 'Number
-                  -> (range y)
-                    map $ fn (yi) ([] xi yi)
-                map $ fn (pair) (f & pair)
-              :: 'List 'respo.schema/Component
+            -> (range x)
+              mapcat $ fn (xi)
+                -> (range y)
+                  map $ fn (yi) ([] xi yi)
+              map $ fn (pair)
+                f
+                  .unwrap $ first pair
+                  .unwrap $ last pair
           :examples $ []
           :schema $ :: 'Fn $ {}
             :args $ [] 'Number 'Number $ :: 'Fn
-              {} (:return 'respo.schema/Component)
+              {} (:return 'T)
                 :args $ [] 'Number 'Number
-            :return $ :: 'List 'respo.schema/Component
+            :generics $ [] 'T
+            :return $ :: 'List 'T
+          :tests $ [] $ %{} 'TestEntry (:name |coordinate-order-and-generic-results)
+            :code $ quote $ do
+              assert= ([] 0 1 10 11)
+                expand-grid 2 2 $ fn (x y)
+                  + (* x 10) y
+              assert= ([] |00 |01 |10 |11)
+                expand-grid 2 2 $ fn (x y) (str x y)
+              assert= ([])
+                expand-grid 0 2 $ fn (x y) (+ x y)
         'random-opacity $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn random-opacity ()
             if
@@ -236,40 +241,6 @@
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Number)
             :args $ []
-        'return-component $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn return-component (x)
-            hint-fn $ {}
-              :args $ [] 'Dynamic
-              :return 'respo.schema/Component
-              :features $ #{} :js-ffi
-            assert-type x 'respo.schema/Component
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
-        'svg-element $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn svg-element (tag props & children)
-            hint-fn $ {}
-              :args $ [] 'Tag 'Dynamic
-              :rest 'Dynamic
-              :return 'respo.schema/Component
-            return-component $ create-element tag (svg-props props) & children
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:rest 'Dynamic) (:return 'respo.schema/Component)
-            :args $ [] 'Tag 'Dynamic
-        'svg-props $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn svg-props (m)
-            hint-fn $ {}
-              :args $ [] 'Dynamic
-              :return 'respo.schema/DomProps
-              :features $ #{} :js-ffi
-            assert-type m 'respo.schema/DomProps
-          :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/DomProps)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.util
-          :require
-            respo.core :refer $ create-element
-            js-ffi.browser :as browser
+          :require $ js-ffi.browser :as browser

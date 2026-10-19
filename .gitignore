@@ -1,7 +1,7 @@
 
 .compact-inc.cirru
 .calcit-error.cirru
-.calcit/modules/
+.calcit/
 
 .yarn/*
 !.yarn/releases
