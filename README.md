@@ -6,7 +6,7 @@ Cross Stitch
 
 ### 开发与验证
 
-项目使用 Respo 原生 DOM/SVG 渲染，无需 React 或 ReactDOM。当前 Calcit CLI / procs 配对为 0.30.1-alpha.5，Node.js 24 与 Yarn 4.18.0；正式 0.30.1 Release 尚无可安装二进制，不将候选验证标记为正式版验收。浏览器随机数、存储和事件通过 `js-ffi.browser` 调用，挂载点使用 Respo 自身的 DOM 接口；SVG 直接使用公共 `create-element`，不把 Element 或属性 Map 强转成 Component / DomProps。
+项目使用 Respo 原生 DOM/SVG 渲染，无需 React 或 ReactDOM。当前 Calcit CLI / procs 配对为正式 **0.30.1**，Node.js 24 与 Yarn 4.18.0；依赖采用精确正式 Respo 0.16.124、UI 0.8.0 与 js-ffi 0.2.5。浏览器随机数、存储和事件通过 `js-ffi.browser` 调用，挂载点使用 Respo 自身的 DOM 接口；SVG 直接使用公共 `create-element`，不把 Element 或属性 Map 强转成 Component / DomProps。
 
 更新依赖后执行 `caps --strict --ci`、`caps verify --toolchain` 和 `yarn install --immutable`。使用 `calcit test --require-match` 运行原定义附带测试，`yarn dev` 先编译再启动 Vite，修改 Calcit 时在另一终端运行 `yarn watch`，无需 concurrently。`yarn build` 编译一次并读取 `VITE_BASE_URL`（默认相对路径），`yarn release` 强制相对路径并完成编译，不依赖残留 js-out。
 
