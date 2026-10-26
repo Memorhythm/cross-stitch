@@ -144,7 +144,7 @@
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
-                target $ option:unwrap $ dom/query-selector |.app
+                target $ .unwrap $ dom/query-selector |.app
               render-with! target
                 fn () $ comp-container @*store
                 , dispatch!
