@@ -23,8 +23,7 @@
                       d! $ Op :version
                   <> |Change
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'app.schema/Store
+          :schema $ quote $ Fn app.schema/Store (-> respo.schema/Component)
         'comp-field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-field (metrics)
             create-element :svg
@@ -33,8 +32,7 @@
               , & $ expand-grid (:grid-size metrics) (:grid-size metrics)
                 fn (x y) (comp-sudoku metrics x y)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'app.schema/Metrics
+          :schema $ quote $ Fn app.schema/Metrics (-> respo.schema/Component)
         'comp-sudoku $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-sudoku (metrics x y)
             let
@@ -53,9 +51,7 @@
                 sx $ + from-x cell-padding cell-margin
                 sy $ + from-y cell-padding cell-margin
                 mk-lines $ fn (prefix offset)
-                  hint-fn $ {}
-                    :args $ [] 'String 'Number
-                    :return $ :: 'List 'respo.schema/Element
+                  hint-fn $ Fn String Number $ -> (List respo.schema/Element)
                   expand-grid cell-size cell-size $ fn (a b)
                     create-element :line $ {}
                       :key $ str prefix a |: b
@@ -82,8 +78,7 @@
                 {} $ :style $ {} (:cursor |none)
                 , & $ concat ([] rect-el) lines-a lines-b
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'respo.schema/Component)
-            :args $ [] 'app.schema/Metrics 'Number 'Number
+          :schema $ quote $ Fn app.schema/Metrics Number Number (-> respo.schema/Component)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
@@ -99,12 +94,12 @@
               get-env |mode
               , .unwrap-or |release
           :examples $ []
-          :schema $ :: 'Bool
+          :schema $ quote Bool
         'site $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def site
             {} (:storage |cross-stitch) (:title "|Cross Stitch") (:icon |http://cdn.tiye.me/logo/mvc-works.png)
           :examples $ []
-          :schema $ :: 'Map 'Tag 'String
+          :schema $ quote $ Map Tag String
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.config
     'app.main $ %{} 'FileEntry
@@ -112,45 +107,40 @@
         '*store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defref *store schema/store
           :examples $ []
-          :schema $ :: 'Ref 'app.schema/Store
+          :schema $ quote $ Ref app.schema/Store
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (raw-op)
             reset! *store $ updater @*store $ decode-map-as raw-op 'app.schema/Op
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!)
             add-watch! *store :changes $ fn (s prev) (render-app!)
             browser/add-event-listener! |beforeunload $ fn (_event) (persist-storage!)
             println "|App started."
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             browser/storage-set! |cross-stitch $ format-cirru-edn @*store
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (render-app!)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
                 target $ .unwrap $ dom/query-selector |.app
               render-with! target
                 fn () $ comp-container @*store
-                , dispatch!
+                fn (op)
+                  hint-fn $ Fn app.schema/Op (-> Unit) (:features :js-ffi)
+                  dispatch! op
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -165,24 +155,24 @@
         'Metrics $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Metrics (:stroke-size 'Number) (:stroke-width 'Number) (:cell-margin 'Number) (:cell-padding 'Number) (:cell-size 'Number) (:grid-size 'Number) (:background-color 'String) (:duration 'Number) (:radius 'Number)
           :examples $ []
-          :schema $ :: 'StructDef
+          :schema $ quote StructDef
         'Op $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defenum Op (:version) (:hydrate-storage 'app.schema/Store)
           :examples $ []
-          :schema $ :: 'EnumDef
+          :schema $ quote EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defstruct Store (:metrics 'app.schema/Metrics)
           :examples $ []
-          :schema $ :: 'StructDef
+          :schema $ quote StructDef
         'metrics $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def metrics
             Metrics :stroke-size 6 :stroke-width 2 :cell-margin 2 :cell-padding 4 :cell-size 4 :grid-size 8 :background-color "|rgb(214,6,38)" :duration 500 :radius 4
           :examples $ []
-          :schema $ :: 'app.schema/Metrics
+          :schema $ quote app.schema/Metrics
         'store $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def store (Store :metrics metrics)
           :examples $ []
-          :schema $ :: 'app.schema/Store
+          :schema $ quote app.schema/Store
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.schema
     'app.updater $ %{} 'FileEntry
@@ -194,8 +184,7 @@
               (:hydrate-storage data) data
               _ $ do (eprintln |Unknown-op: op) store
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'app.schema/Store)
-            :args $ [] 'app.schema/Store 'app.schema/Op
+          :schema $ quote $ Fn app.schema/Store app.schema/Op (-> app.schema/Store)
           :tests $ [] $ %{} 'TestEntry (:name |typed-storage-hydration)
             :code $ quote $ let
                 next-store $ Store :metrics $ Metrics :stroke-size 6 :stroke-width 2 :cell-margin 2 :cell-padding 4 :cell-size 4 :grid-size 4 :background-color "|rgb(214,6,38)" :duration 500 :radius 4
@@ -218,12 +207,10 @@
                   .unwrap $ first pair
                   .unwrap $ last pair
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'Number 'Number $ :: 'Fn
-              {} (:return 'T)
-                :args $ [] 'Number 'Number
-            :generics $ [] 'T
-            :return $ :: 'List 'T
+          :schema $ quote $ Fn Number Number
+            Fn Number Number $ -> T
+            -> $ List T
+            :generics T
           :tests $ [] $ %{} 'TestEntry (:name |coordinate-order-and-generic-results)
             :code $ quote $ do
               assert= ([] 0 1 10 11)
@@ -239,8 +226,7 @@
               > (browser/random) 0.5
               , 1 0
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ []
+          :schema $ quote $ Fn (-> Number)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.util
           :require $ js-ffi.browser :as browser
