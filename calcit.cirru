@@ -6,7 +6,7 @@
     {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |respo.calcit/ |respo-ui.calcit/
-      :type-slots $ {} $ :dispatch-op |app.schema/Op
+      :type-slots $ {} $ :dispatch-op 'app.schema/Op
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
       :defs $ {}
@@ -113,7 +113,7 @@
             reset! *store $ updater @*store $ decode-map-as raw-op 'app.schema/Op
             , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn app.schema/Op (-> Unit)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!)
             add-watch! *store :changes $ fn (s prev) (render-app!)
@@ -136,9 +136,7 @@
                 target $ .unwrap $ dom/query-selector |.app
               render-with! target
                 fn () $ comp-container @*store
-                fn (op)
-                  hint-fn $ Fn app.schema/Op (-> Unit) (:features :js-ffi)
-                  dispatch! op
+                , dispatch!
           :examples $ []
           :schema $ quote $ Fn (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
@@ -153,15 +151,15 @@
     'app.schema $ %{} 'FileEntry
       :defs $ {}
         'Metrics $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct Metrics (:stroke-size 'Number) (:stroke-width 'Number) (:cell-margin 'Number) (:cell-padding 'Number) (:cell-size 'Number) (:grid-size 'Number) (:background-color 'String) (:duration 'Number) (:radius 'Number)
+          :code $ quote $ defstruct Metrics (:stroke-size Number) (:stroke-width Number) (:cell-margin Number) (:cell-padding Number) (:cell-size Number) (:grid-size Number) (:background-color String) (:duration Number) (:radius Number)
           :examples $ []
           :schema $ quote StructDef
         'Op $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defenum Op (:version) (:hydrate-storage 'app.schema/Store)
+          :code $ quote $ defenum Op (:version) (:hydrate-storage app.schema/Store)
           :examples $ []
           :schema $ quote EnumDef
         'Store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defstruct Store (:metrics 'app.schema/Metrics)
+          :code $ quote $ defstruct Store (:metrics app.schema/Metrics)
           :examples $ []
           :schema $ quote StructDef
         'metrics $ %{} 'CodeEntry (:doc |)
