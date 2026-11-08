@@ -5,7 +5,7 @@ Cross Stitch
 
 ### 本轮使用者影响
 
-开发和 CI 使用正式 Calcit / procs **0.37.0**。请重新安装依赖并构建。SVG 图案、Change 按钮和存储行为照旧。渲染直接使用受检的 `Op -> Unit` 分发。
+开发和 CI 使用正式 Calcit / procs **0.38.0**。请重新安装依赖并构建。SVG 图案、Change 按钮和存储行为照旧。渲染直接使用受检的 `Op -> Unit` 分发。
 
 现有 Demo 的存档写入/恢复缺口另见 [#14](https://github.com/Memorhythm/cross-stitch/issues/14)，本次不修改存储策略，也不把迁移当作该问题已解决。
 
@@ -17,7 +17,7 @@ Cross Stitch
 
 此前 0.32.1 迁移通过 Caps 严格解析与工具链校验、immutable 安装、canonical、144 项全定义检查、完整 strict、17 项公开定义检查及原有两项测试。相对路径构建及实际浏览器显示、Change 回调和刷新已验收：页面显示 64 个网格与 2048 条 SVG 线段，控制台无警告或错误；未验收真实存档。原来的 `:version` updater 分支仍返回原 Store，不将按钮验收描述为新增业务状态变更。
 
-仅维护 `calcit.cirru` / `deps.cirru`，CI 禁止 compact/package 回流。生产 CDN 前缀和原服务器 `dist/*` 路径不变，PR 使用 `pr/<编号>/<run>/<attempt>/` 隔离。五个 Action 采用精确正式 tag；接受 tag 可移动的维护取舍。COS Action v1.2.0 内置 verify 校验公开内容和 HTML 引用，不新增项目校验脚本。上传排队、不取消；生产发布前检查当前 main，过期构建同时跳过 COS 和服务器同步。CI 保留 canonical、全部定义、完整 strict、公开合同及原测试。
+仅维护 `calcit.cirru` / `deps.cirru`，CI 禁止 compact/package 回流。生产 CDN 前缀和原服务器 `dist/*` 路径不变，PR 使用 `pr/<编号>/<run>/<attempt>/` 隔离。五个 Action 采用精确正式 tag；接受 tag 可移动的维护取舍。COS Action v1.3.0 内置 verify 校验公开内容和 HTML 引用，不新增项目校验脚本。上传排队、不取消；生产发布前检查当前 main，过期构建同时跳过 COS 和服务器同步。CI 保留 canonical、全部定义、完整 strict、公开合同及原测试。
 
 上游函数类型兼容问题已附纯 core 最小复现报告到 [Calcit #2499](https://github.com/calcit-lang/calcit/issues/2499)。0.32.1 迁移曾通过显式类型适配绕过该问题。
 
