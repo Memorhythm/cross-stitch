@@ -113,23 +113,23 @@
             reset! *store $ updater @*store $ decode-map-as raw-op 'app.schema/Op
             , &unit
           :examples $ []
-          :schema $ quote $ Fn schema/Op (-> Unit)
+          :schema $ quote $ Fn schema/Op (-> Unit) (:features :io :state)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (render-app!)
             add-watch! *store :changes $ fn (s prev) (render-app!)
             browser/add-event-listener! |beforeunload $ fn (_event) (persist-storage!)
             println "|App started."
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
         'persist-storage! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn persist-storage! ()
             browser/storage-set! |cross-stitch $ format-cirru-edn @*store
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :state)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! () (render-app!)
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn (-> Unit) (:features :io :js-ffi :state)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! ()
             let
@@ -138,7 +138,7 @@
                 fn () $ comp-container @*store
                 , dispatch!
           :examples $ []
-          :schema $ quote $ Fn (-> Unit)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -182,7 +182,7 @@
               (:hydrate-storage data) data
               _ $ do (eprintln |Unknown-op: op) store
           :examples $ []
-          :schema $ quote $ Fn Store Op (-> Store)
+          :schema $ quote $ Fn Store Op (-> Store) (:features :io)
           :tests $ [] $ %{} 'TestEntry (:name |typed-storage-hydration)
             :code $ quote $ let
                 next-store $ Store :metrics $ Metrics :stroke-size 6 :stroke-width 2 :cell-margin 2 :cell-padding 4 :cell-size 4 :grid-size 4 :background-color "|rgb(214,6,38)" :duration 500 :radius 4

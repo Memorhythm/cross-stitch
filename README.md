@@ -5,7 +5,7 @@ Cross Stitch
 
 ### 本轮使用者影响
 
-开发和 CI 使用正式 Calcit / procs **0.41.1**。请重新安装依赖并构建。SVG 图案、Change 按钮和存储行为照旧。渲染直接使用受检的 `Op -> Unit` 分发。
+开发和 CI 使用正式 Calcit / procs **0.42.1**。请重新安装依赖并构建。SVG 图案、Change 按钮和存储行为照旧。渲染直接使用受检的 `Op -> Unit` 分发。
 
 现有 Demo 的存档写入/恢复缺口另见 [#14](https://github.com/Memorhythm/cross-stitch/issues/14)，本次不修改存储策略，也不把迁移当作该问题已解决。
 
