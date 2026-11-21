@@ -5,13 +5,13 @@ Cross Stitch
 
 ### 本轮使用者影响
 
-开发和 CI 使用正式 Calcit / procs **0.42.1**。请重新安装依赖并构建。SVG 图案、Change 按钮和存储行为照旧。渲染直接使用受检的 `Op -> Unit` 分发。
+开发和 CI 使用正式 Calcit / procs **0.44.0**。请重新安装依赖并构建。SVG 图案、Change 按钮和存储行为照旧。渲染直接使用受检的 `Op -> Unit` 分发。
 
 现有 Demo 的存档写入/恢复缺口另见 [#14](https://github.com/Memorhythm/cross-stitch/issues/14)，本次不修改存储策略，也不把迁移当作该问题已解决。
 
 ### 开发与验证
 
-项目使用 Respo 原生 DOM/SVG 渲染，无需 React 或 ReactDOM。使用 Node.js 24、Yarn 4.18.0，直接依赖为精确正式 Respo 0.19.5、UI 0.15.2、js-ffi 0.2.13，传递依赖 Router 为正式 0.12.2。浏览器随机数、存储和事件通过 `js-ffi.browser` 调用，挂载点使用 Respo 自身的 DOM 接口；SVG 直接使用公共 `create-element`，不把 Element 或属性 Map 强转成 Component / DomProps。
+项目使用 Respo 原生 DOM/SVG 渲染，无需 React 或 ReactDOM。使用 Node.js 24、Yarn 4.18.0，直接依赖为精确正式 Respo 0.19.13、UI 0.15.7、js-ffi 0.2.19，传递依赖 Router 为正式 0.12.11。浏览器随机数、存储和事件通过 `js-ffi.browser` 调用，挂载点使用 Respo 自身的 DOM 接口；SVG 直接使用公共 `create-element`，不把 Element 或属性 Map 强转成 Component / DomProps。
 
 更新依赖后执行 `caps --strict --ci`、`caps verify --toolchain` 和 `yarn install --immutable`。npm 新解析版本的等待时间为 60 分钟，不设置单包豁免；已有锁定版本不会重新计算等待时间。使用 `calcit test --require-match` 运行原定义附带测试，`yarn dev` 先编译再启动 Vite，修改 Calcit 时在另一终端运行 `yarn watch`，无需 concurrently。`yarn build` 编译一次并读取 `VITE_BASE_URL`（默认相对路径），`yarn release` 强制相对路径并完成编译，不依赖残留 js-out。
 
